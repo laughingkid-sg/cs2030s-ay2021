@@ -31,11 +31,7 @@ public class Pair<T> implements SourceList<T> {
 
   // Write your code here
   public int length() {
-    if (this.first == null) {
-      return 0;
-    } else {
-      return 1 + this.second.length();
-    }
+    return 1 + this.second.length();
   }
 
   @Override
