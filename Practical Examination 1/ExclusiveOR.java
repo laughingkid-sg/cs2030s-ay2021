@@ -3,11 +3,9 @@
  * AY20/21 Semester 2
  *
  * @author A0000000X
- */ 
+ */
 
 class ExclusiveOR extends Operation {
-  private Expression exp1;
-  private Expression exp2;
 
   public ExclusiveOR(Expression exp1, Expression exp2){
     super('^', exp1, exp2);
