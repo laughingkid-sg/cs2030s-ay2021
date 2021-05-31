@@ -30,17 +30,10 @@ class ShopSimulation extends Simulation {
   public ShopSimulation(Scanner sc) {
     initEvents = new Event[sc.nextInt()];
     int numOfCounters = sc.nextInt();
+    int queueLengthCounters = sc.nextInt();
+    int queueLength = sc.nextInt();
 
-    Counter[] counters = new Counter[numOfCounters];
-
-    for (int i = 0; i < numOfCounters; i++) {
-      counters[i] = new Counter(i, true);
-    }
-    /*
-    available = new boolean[numOfCounters];
-    for (int i = 0; i < numOfCounters; i++) {
-      available[i] = true;
-    }*/
+    Shop shop = new Shop(numOfCounters, queueLength, queueLengthCounters);
 
     int id = 0;
     while (sc.hasNextDouble()) {
@@ -49,8 +42,8 @@ class ShopSimulation extends Simulation {
       /**
       initEvents[id] = new ShopEvent(ShopEvent.ARRIVAL,
           arrivalTime, id, serviceTime, available);*/
-      Customer customer = new Customer(id, arrivalTime, serviceTime);
-      initEvents[id] = new ArrivalEvent(customer, counters);
+      Customer customer = new Customer(id, arrivalTime, serviceTime, 0, 0, 0.000);
+      initEvents[id] = new ArrivalEvent(customer, shop);
       id += 1;
     }
   }
