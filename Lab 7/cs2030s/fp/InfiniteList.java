@@ -105,9 +105,7 @@ public class InfiniteList<T> {
    * @return The first InfiniteList of type T.
    */
   public InfiniteList<T> tail() {
-    return this.head.get().map(x -> false).orElse(true)
-        ? this.tail.get().tail()
-        : this.tail.get();
+    return this.head.get().map(x -> this.tail.get()).orElseGet(() -> this.tail.get().tail());
   }
 
   /**
@@ -119,11 +117,15 @@ public class InfiniteList<T> {
    * @return The new InfiniteList.
    */
   public <R> InfiniteList<R> map(Transformer<? super T, ? extends R> mapper) {
+    /*
     return new InfiniteList<>(
         Lazy.of(() -> this.head.get().map(x -> false).orElse(true)
           ? Maybe.none()
           : Maybe.some(mapper.transform(this.head()))),
-        Lazy.of(() -> this.tail.get().map(mapper)));
+        Lazy.of(() -> this.tail.get().map(mapper)));*/
+    return new InfiniteList<R>(
+        head.map(h -> h.map(mapper)),
+        tail.map(t -> t.map(mapper)));
   }
 
   /**
@@ -135,13 +137,18 @@ public class InfiniteList<T> {
    * @return The new InfiniteList.
    */
   public InfiniteList<T> filter(BooleanCondition<? super T> predicate) {
+    /*
     return new InfiniteList<>(
       Lazy.of(() -> this.head.get().map(x -> false).orElse(true)
         ? Maybe.none()
         : predicate.test(this.head())
           ? Maybe.some(this.head())
           : Maybe.none()),
-      Lazy.of(() -> this.tail.get().filter(predicate)));
+      Lazy.of(() -> this.tail.get().filter(predicate)));*/
+    return new InfiniteList<T>(
+        head.map(h -> h.filter(predicate)),
+        tail.map(t -> t.filter(predicate))
+        );
   }
 
   /**
@@ -210,6 +217,7 @@ public class InfiniteList<T> {
    * @return The result of the reduction.
    */
   public <U> U reduce(U identity, Combiner<U, ? super T, U> accumulator) {
+
     U result = identity;
     InfiniteList<T> infiniteList = this;
     while (!infiniteList.isEmpty()) {
@@ -219,6 +227,7 @@ public class InfiniteList<T> {
       infiniteList = infiniteList.tail.get();
     }
     return result;
+    // return accumulator.combine(this.tail().reduce(identity, accumulator), this.head());
   }
 
   /**
@@ -227,6 +236,7 @@ public class InfiniteList<T> {
    * @return The count of elements in this InfiniteList.
    */
   public long count() {
+    /*
     long counter = 0;
     InfiniteList<T> infiniteList = this;
     while (!infiniteList.isEmpty()) {
@@ -235,7 +245,8 @@ public class InfiniteList<T> {
       }
       infiniteList = infiniteList.tail.get();
     }
-    return counter;
+    return counter;*/
+    return reduce(0L, (x, y) -> x + 1L);
   }
 
   /**
@@ -323,5 +334,10 @@ public class InfiniteList<T> {
     public long count() {
       return 0;
     }
+
+    /*
+    public <U> U reduce(U identity, Combiner<U, ? super Object, U> accumulator) {
+      return accumulator.combine(empty(), identity);
+    }*/
   }
 }
