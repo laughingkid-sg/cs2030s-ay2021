@@ -1,5 +1,6 @@
 import java.util.Scanner;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -16,9 +17,10 @@ class BusStop {
 
   /** A human friendly name. */
   private final String name;
-  
+
   /**
    * Constructor for this bus stop.
+   *
    * @param   id     The id of this bus stop.
    * @param   name   A human friendly name of the bus stop.
    */
@@ -29,6 +31,7 @@ class BusStop {
 
   /**
    * Constructor for this bus stop without name.
+   *
    * @param   id     The id of this bus stop.
    */
   public BusStop(String id) {
@@ -38,6 +41,7 @@ class BusStop {
 
   /**
    * Checks if the bus stop name matches the given string.
+   *
    * @param  name The string to match.
    * @return true if the name matches; false otherwise.
    */
@@ -48,27 +52,32 @@ class BusStop {
   /**
    * Return the set of bus services that serve this bus stop as
    * a set.  Query the web server.
-   * @return A set of BusService that serve this bus stop.
+   *
+   * @return A set of BusService that serve this bus stop encapsulated
+   *          in a CompletalbeFuture.
    */
-  public Set<BusService> getBusServices() {
+  public CompletableFuture<Set<BusService>> getBusServices() {
     // Thread.sleep(200);
     // bus services that visit this stop
 
-    Scanner sc = new Scanner(BusAPI.getBusServicesAt(stopId));
-    Set<BusService> busServices = sc
-        .useDelimiter("\n")
-        .tokens()
-        .skip(1) // skip first line
-        .flatMap(line -> Stream.of(line.split(",")))
-        .map(id -> new BusService(id))
-        .collect(Collectors.toSet());
-    sc.close();
-    return busServices;
+    return BusAPI.getBusServicesAt(this.stopId).thenApply(task -> {
+      Scanner sc = new Scanner(task);
+      Set<BusService> busServices = sc
+          .useDelimiter("\n")
+          .tokens()
+          .skip(1) // skip first line
+          .flatMap(line -> Stream.of(line.split(",")))
+          .map(id -> new BusService(id))
+          .collect(Collectors.toSet());
+      sc.close();
+      return busServices;
+    });
   }
 
   /**
    * Checks of this bus stop equals to another bus stop -- two bus
    * stops are equal if their id is the same.
+   *
    * @param  o Another object to compare against.
    * @return  true if the two objects are equal, false otherwise.
    */
@@ -85,6 +94,7 @@ class BusStop {
 
   /**
    * Return a hash code of the bus stop.
+   *
    * @return The hash code of this bus stop.
    */
   @Override
@@ -94,6 +104,7 @@ class BusStop {
 
   /**
    * Return a string representation of the bus stop.
+   *
    * @return Return the name of the bus stop.
    */
   @Override

@@ -2,36 +2,54 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.concurrent.CompletableFuture;
 
 /**
- * This program finds different ways one can travel by bus (with a bit 
+ * This program finds different ways one can travel by bus (with a bit
  * of walking) from one bus stop to another.
  *
- * @author: Ooi Wei Tsang
+ * @author: Ooi Wei Tsang 
  * @version: CS2030S AY20/21 Semester 2, Lab 8
  */
 public class Main {
   /**
    * The program read a sequence of (id, search string) from either
-   * standard input or a file.  If an invalid filename is given, the 
+   * standard input or a file.  If an invalid filename is given, the
    * program would quit with an error message.
+   *
    * @param args Command line arguments
    */
   public static void main(String[] args) {
-    Instant start = Instant.now();
+    final Instant start = Instant.now();
+    ArrayList<CompletableFuture<String>> des = new ArrayList<>();
     try {
       Scanner sc = createScanner(args);
       while (sc.hasNext()) {
         BusStop srcId = new BusStop(sc.next());
         String searchString = sc.next();
-        System.out.println(BusSg.findBusServicesBetween(srcId, searchString).description());
+
+        CompletableFuture<String> routeInfo = BusSg
+            .findBusServicesBetween(srcId, searchString)
+            .thenCompose(BusRoutes::description);
+        des.add(routeInfo);
+
+        //System.out.println(BusSg.findBusServicesBetween(srcId, searchString).description());
       }
       sc.close();
     } catch (FileNotFoundException exception) {
       System.err.println("Unable to open file " + args[0] + " "
           + exception);
     }
+
+    CompletableFuture<?>[] joined = des.toArray(CompletableFuture<?>[]::new);
+    CompletableFuture.allOf(joined).join();
+
+    for (int i = 0; i < joined.length; i++) {
+      joined[i].thenAccept(System.out::println);
+    }
+
     Instant stop = Instant.now();
     System.out.printf("Took %,dms\n", Duration.between(start, stop).toMillis());
   }
@@ -51,7 +69,7 @@ public class Main {
     if (args.length == 0) {
       // If there is no argument, read from standard input.
       return new Scanner(System.in);
-    } 
+    }
     // Else read from file
     FileReader fileReader = new FileReader(args[0]);
     return new Scanner(fileReader);

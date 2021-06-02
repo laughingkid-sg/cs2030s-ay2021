@@ -1,9 +1,17 @@
+/**
+ * CS2030S Lab 5
+ * AY20/21 Semester 2
+ *
+ * @author 
+ */
+
 import cs2030s.fp.Maybe;
 import cs2030s.fp.Transformer;
 import java.util.Map;
 
 class Lab5 {
-  public static String getGrade(String student, String module, String assessment,
+
+  public static String getGradeOld(String student, String module, String assessment,
       Map<String, Map<String, Map<String, String>>> db) {
     Map<String, Map<String, String>> std = db.get(student);
     if (std == null) {
@@ -22,17 +30,28 @@ class Lab5 {
     }
   }
 
-  /*
+
   public static String getGrade(String student, String module, String assessment,
       Map<String, Map<String, Map<String, String>>> map) {
 
-    Transformer<Map<String, Map<String, String>>, Maybe<Map<String, String>>> getModule = ..
+    Transformer<Map<String, Map<String, String>>, Maybe<Map<String, String>>> getModule =
+        new Transformer<>() {
+          public Maybe<Map<String, String>> transform(Map<String, Map<String, String>> m) {
+            return Maybe.of(m.get(module));
+          }
+        };
 
-    Transformer<Map<String, String>, Maybe<String>> getAssessment = ..
+    Transformer<Map<String, String>, Maybe<String>> getAssessment =
+        new Transformer<>() {
+          public Maybe<String> transform(Map<String, String> m) {
+            return Maybe.of(m.get(assessment));
+          }
+        };
 
-    return Maybe...;
+    return Maybe.of(map.get(student)).flatMap(getModule)
+        .flatMap(getAssessment).orElse("No Such Entry").toString();
   }
-  */
+
 
   public static void main(String[] args) {
     Map<String, Map<String, Map<String, String>>> students =
